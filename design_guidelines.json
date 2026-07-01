@@ -1,0 +1,123 @@
+{
+  "theme": "dark",
+  "archetype": "5 (Luxury)",
+  "brand": {
+    "name": "Avani Manoria",
+    "domain": "Software Developer, System Design, AI, Automation",
+    "tone": "Cinematic, Expensive, Competent, Mysterious"
+  },
+  "colors": {
+    "background": {
+      "base": "#050505",
+      "surface": "rgba(255, 255, 255, 0.03)",
+      "surface_hover": "rgba(255, 255, 255, 0.06)",
+      "input": "rgba(255, 255, 255, 0.02)"
+    },
+    "text": {
+      "primary": "#F2F2F2",
+      "secondary": "#A1A1AA",
+      "accent": "#F2DDB6"
+    },
+    "accents": {
+      "primary": "#D4AF37",
+      "secondary": "#E5E4E2",
+      "glow": "rgba(212, 175, 55, 0.15)"
+    },
+    "borders": {
+      "default": "rgba(255, 255, 255, 0.08)",
+      "highlight": "rgba(212, 175, 55, 0.3)"
+    }
+  },
+  "typography": {
+    "fonts": {
+      "headings": "Cormorant Garamond, serif",
+      "body": "Outfit, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "hierarchy": {
+      "h1": "text-5xl sm:text-7xl font-light tracking-tighter leading-none text-white",
+      "h2": "text-3xl sm:text-4xl font-light tracking-tight text-white",
+      "h3": "text-2xl font-normal text-white",
+      "body": "text-base font-light text-zinc-400 leading-relaxed",
+      "overline": "text-xs font-mono uppercase tracking-[0.2em] text-[#F2DDB6]"
+    }
+  },
+  "spacing_and_layout": {
+    "container": "max-w-7xl mx-auto px-6 sm:px-12",
+    "section_padding": "py-24 sm:py-32",
+    "grid": "grid-cols-1 md:grid-cols-12 gap-8 md:gap-12",
+    "card_padding": "p-8 md:p-12",
+    "radius": "rounded-none md:rounded-2xl"
+  },
+  "surfaces": {
+    "glassmorphism": {
+      "class": "bg-white/5 backdrop-blur-2xl border border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]",
+      "usage": "Headers, project cards, contact form container"
+    },
+    "flat_dark": {
+      "class": "bg-[#0A0A0A] border border-white/5",
+      "usage": "Footer, background sections"
+    }
+  },
+  "three_d_and_motion": {
+    "hero_3d": {
+      "library": "react-three-fiber, @react-three/drei",
+      "concept": "A floating, abstract glass/metallic geometry (like a TorusKnot or a neural network particle mesh) that reacts slightly to mouse movement. Material should be physical with transmission (glass-like) or dark metal reflecting a subtle gold light.",
+      "lighting": "AmbientLight at low intensity, DirectionalLight angled for sharp highlights, and a subtle PointLight following the cursor."
+    },
+    "scroll_animations": {
+      "library": "framer-motion",
+      "concept": "Staggered fade-up for texts, slow scale-in for images, parallax effect on floating elements."
+    },
+    "smooth_scroll": {
+      "library": "lenis",
+      "concept": "Momentum scrolling to make the page feel heavy and premium."
+    }
+  },
+  "media": {
+    "hero_background": {
+      "url": "https://images.unsplash.com/photo-1517241034903-9a4c3ab12f00?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGx1eHVyeSUyMGRhcmslMjBnZW9tZXRyeSUyMDNkfGVufDB8fHx8MTc4MjkzNDM0N3ww&ixlib=rb-4.1.0&q=85",
+      "description": "Abstract black and white wavy shapes for deep texture behind text (used if 3D canvas is loading or as fallback)",
+      "category": "background"
+    },
+    "project_placeholder_1": {
+      "url": "https://images.pexels.com/photos/8346914/pexels-photo-8346914.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "description": "Dark minimalist flatlay of modern tech gadgets",
+      "category": "project_image"
+    },
+    "project_placeholder_2": {
+      "url": "https://images.unsplash.com/photo-1709625862266-014ef072fd93?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGx1eHVyeSUyMGRhcmslMjBnZW9tZXRyeSUyMDNkfGVufDB8fHx8MTc4MjkzNDM0N3ww&ixlib=rb-4.1.0&q=85",
+      "description": "Curved abstract object, luxury geometric",
+      "category": "project_image"
+    },
+    "about_image": {
+      "url": "https://images.unsplash.com/photo-1735948055457-8d816fb80a87?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2MDV8MHwxfHNlYXJjaHwyfHxtaW5pbWFsaXN0JTIwZWxlZ2FudCUyMHdvcmtzcGFjZSUyMGRhcmt8ZW58MHx8fHwxNzgyMTA1OTYzfDA&ixlib=rb-4.1.0&q=85",
+      "description": "Elegant minimalist workspace in the dark",
+      "category": "about_image"
+    }
+  },
+  "testing": {
+    "required_attributes": [
+      "data-testid='hero-title'",
+      "data-testid='hero-3d-canvas'",
+      "data-testid='nav-logo'",
+      "data-testid='nav-links'",
+      "data-testid='project-card'",
+      "data-testid='contact-form'",
+      "data-testid='contact-submit-button'",
+      "data-testid='about-section'"
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Install '@phosphor-icons/react' for luxury Duotone icons.",
+    "Install 'lenis' for smooth scrolling.",
+    "Install 'framer-motion' for entrance and interaction animations.",
+    "Install 'three', '@react-three/fiber', and '@react-three/drei' for the 3D interactive design elements.",
+    "Implement a bespoke typographic logo for 'Avani Manoria' using the Cormorant Garamond font with a subtle glowing gold accent on hover.",
+    "Design the layout adopting E1's bento grids and asymmetric spacing principles, maximizing negative space.",
+    "Avoid solid background blocks for forms and cards. Use 'Crystal Glassmorphism' (backdrop-blur-2xl, bg-white/5) or strict 1px subtle borders over #050505.",
+    "Use Shadcn/UI for the contact form elements but strip any default Vercel-like styling to fit the custom dark luxury theme.",
+    "The Contact form must connect to the provided FastAPI backend to save entries into MongoDB.",
+    "Implement hover micro-interactions universally (e.g. text color transition, subtle scale, border glow)."
+  ]
+}
