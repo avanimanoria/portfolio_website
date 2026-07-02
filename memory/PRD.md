@@ -5,56 +5,77 @@ Build a personal portfolio website with 3D interactive animation design elements
 software developer / system design engineer / AI & automation specialist named **Avani Manoria**.
 Rich, luxury, elegant, sophisticated color palette. Luxury elegant fonts. Logo of the name.
 
+**Iteration 2**: Final-year engineering student positioning. Palette → onyx + midnight blue + sapphire + champagne gold. 3 real projects. Hidden admin panel + keyboard shortcut for self-editing. Elegant fonts with Italian-italic accents.
+
 ## Architecture
-- **Frontend**: React 19 + CRA, TailwindCSS, framer-motion, lenis (smooth scroll), sonner (toasts).
-- **3D**: three@0.171, @react-three/fiber@9.1.2, @react-three/drei@10.7.7 (MeshTransmissionMaterial gold torus knot + inner metal icosahedron + sparkles + stars + environment).
-- **Backend**: FastAPI + Motor + MongoDB. All routes prefixed `/api`.
-- **Persistence**: `contact_messages` MongoDB collection (id, name, email, subject?, message, created_at).
+- **Frontend**: React 19 + CRA, TailwindCSS, framer-motion, lenis, sonner, axios.
+- **3D**: three@0.171 + @react-three/fiber@9.1.2 + @react-three/drei@10.7.7 (gold torus knot with sapphire + gold dual lighting).
+- **Backend**: FastAPI + Motor + MongoDB. All routes prefixed `/api`. JWT (bcrypt + PyJWT).
+- **Auth**: single-admin JWT, seeded from `.env` on startup (idempotent). 5-attempt brute-force lockout for 15 min.
+- **Collections**: `users`, `settings`, `projects`, `education`, `contact_messages`, `login_attempts`.
 
 ## Design system
-- Palette: `#050505` obsidian, `#D4AF37` champagne gold, `#F2DDB6` gold-soft, `#E5E4E2` platinum, `#F2F2F2` ivory.
-- Fonts: **Cormorant Garamond** (display), **Outfit** (body), **JetBrains Mono** (accents).
-- Logo: bespoke "AM" monogram inside a hairline gold ring, paired with "Avani *Manoria*" wordmark and a mono tag "Software · Systems · AI".
-- Motion: staggered fade-ups, smooth Lenis momentum scroll, subtle floating on the hero mesh, mouse-following point light.
+- Palette: `#050505` onyx · `#0B1E3F` midnight · `#0F52BA` sapphire · `#D4AF37` champagne gold · `#F2DDB6` gold-soft · `#F2F2F2` ivory.
+- Fonts: **Cormorant Garamond** (display, heavy italic use), **La Belle Aurore** (signature script), **Outfit** (body), **JetBrains Mono** (accents).
+- Section eyebrows use Italian words: *Piccola introduzione · Filosofia · Percorso · Corrispondenza · Con cura*.
+- Signature "Avani" script appears in Education section footer and Footer.
 
-## Sections implemented
-1. **Hero** — 3D animated gold knot + inner icosahedron core, headline with italic gold-gradient surname, meta strip.
-2. **Marquee** — italic serif ticker with luxury discipline keywords.
-3. **About** — bio + philosophy glass card with "Craft / Restraint / Curiosity" pillars.
-4. **Skills** — 4 discipline cards (Software Eng, System Design, Applied AI, Automation).
-5. **Projects** — 4 selected works (Aurum, Meridian, Loom, Cortex) with images, stack pills, case-study CTA.
-6. **Experience** — vertical gold timeline (2018 → present).
-7. **Contact** — glass form (POST /api/contact) + direct email + socials.
-8. **Footer** — logo, nav, elsewhere, © line.
+## Sections (public site `/`)
+1. Hero — dual-lit 3D torus knot, meta strip with "Final Year · Engineering".
+2. Marquee — italic serif ticker.
+3. About — bio + philosophy card with sapphire + gold blooms.
+4. Skills — 4 disciplines (Software, System Design, Applied AI, Automation).
+5. Projects — dynamic from `/api/projects` (Activity Points MS, Customer Churn ML, Vellum AI concept).
+6. Education / Journey — dynamic from `/api/education`, ends with a script "Avani" signature.
+7. Contact — glass form (POST /api/contact) with dynamic email + socials.
+8. Footer — dynamic socials, signature.
+
+## Hidden admin (`/atelier`)
+- Access: (a) direct URL `/atelier`, (b) global keyboard shortcut `Ctrl / ⌘ + Shift + A` anywhere on the site.
+- No link is visible from the public site.
+- Tabs:
+  - **Profile & Bio** — name, tagline, bios, philosophy quote, contact email, availability, hero meta, socials (LinkedIn, GitHub, Twitter, Writing).
+  - **Projects** — CRUD with inline editing (kind, year, title, blurb, stack, image_url, github_url, live_url, order).
+  - **Education** — CRUD (period, degree, institution, notes, order).
+  - **Messages** — inbox for contact submissions with reply-by-email deep link + delete.
+  - **Settings** — access info + how to change password.
 
 ## Backend endpoints
-- `GET  /api/` — health/root.
-- `POST /api/contact` — create contact message (validates email).
-- `GET  /api/contact/messages` — list messages, newest first.
-- Legacy `/api/status` GET/POST retained.
+- `POST /api/auth/login` · `GET /api/auth/me`
+- `GET /api/profile/settings` · `PATCH /api/profile/settings` *(auth)*
+- `GET/POST/PATCH/DELETE /api/projects[/:id]` *(mutations require auth)*
+- `GET/POST/PATCH/DELETE /api/education[/:id]` *(mutations require auth)*
+- `POST /api/contact` · `GET/DELETE /api/admin/messages[/:id]` *(admin only)*
 
-## What's been implemented (as of 2026-07-01)
-- Full single-page luxury portfolio, live at `/`.
-- 3D interactive hero (react-three-fiber v9) with mouse-tracking point light.
-- Contact form → MongoDB (verified end-to-end).
-- Backend pytest suite: 7/7 passing. Frontend Playwright: all flows passing.
-- Data-testids on every interactive element.
+## Admin credentials
+- Email: `avanimanoria@gmail.com`
+- Password: `Atelier@Avani2026` *(editable via `ADMIN_PASSWORD` in `/app/backend/.env`, auto-refreshed on restart)*
+
+## What's implemented (2026-07-02)
+- Full public site with 3D, dynamic content pulled from API.
+- Full admin CMS (Atelier) with 5 tabs, CRUD across profile/projects/education/messages.
+- Hidden entry: keyboard shortcut + direct URL, invisible to visitors.
+- Auth: JWT + bcrypt + brute-force lockout, admin auto-seeded.
+- Testing: 17/17 backend pytest, 100% frontend flows.
 
 ## Backlog (P0 → P2)
-- **P1** — Real content: bio, project case studies, actual social links, resume PDF download.
-- **P1** — Email delivery of contact submissions (Resend or SendGrid) so Avani gets notified.
-- **P2** — Case-study detail routes (`/work/aurum`, etc.).
-- **P2** — Blog / notes section.
-- **P2** — Analytics dashboard for contact submissions.
-- **P2** — Optional light-mode toggle (currently dark-only, intentional).
-- **P2** — Custom animated cursor + reveal-on-scroll variants.
+- **P1** — Email notifications on new contact submission (Resend/SendGrid).
+- **P1** — Rich text / markdown editor for bio & project blurbs.
+- **P1** — Image upload for project thumbnails (currently URL-based).
+- **P1** — Change-password UI inside Atelier (currently env-driven).
+- **P2** — Case-study detail pages per project.
+- **P2** — Resume PDF upload + download button on hero.
+- **P2** — Public "achievements" section (hackathons, certifications, awards) sourced from Atelier.
+- **P2** — Migrate `@app.on_event` to lifespan handlers.
+- **P2** — Restrict CORS origins for prod; migrate JWT to httpOnly cookies.
+- **P2** — Add "reveal on scroll" animations and a custom cursor.
 
 ## Personas
-- **Recruiters / hiring managers** — need a quick, credible signal of taste & seniority.
-- **Startup founders / CTOs** — evaluating for advisory / contract engagements.
-- **Peers / collaborators** — checking recent work and reaching out.
+- **Recruiters / hiring managers** — need signal of taste, technical depth, and ownership.
+- **Fellow students / collaborators** — checking out projects and reaching out.
+- **Herself (Avani)** — updates content via the private atelier as she progresses through final year.
 
 ## Next tasks
-1. Swap placeholder copy for Avani's real bio, projects, experience.
-2. Add real social handles + resume link.
-3. Integrate email notification on new contact submission.
+1. Add real socials, resume PDF, and refined project descriptions via Atelier.
+2. (Optional) Email notifications for new contact submissions.
+3. (Optional) Move password change into the Atelier UI so `.env` edits are not needed.

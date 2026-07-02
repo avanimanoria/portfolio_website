@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
@@ -80,9 +80,10 @@ export default function Atelier({ openLogin }) {
   const { admin, ready, logout } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState("profile");
+  const loggingOut = useRef(false);
 
   useEffect(() => {
-    if (ready && !admin) {
+    if (ready && !admin && !loggingOut.current) {
       openLogin?.();
       navigate("/");
     }
@@ -98,9 +99,12 @@ export default function Atelier({ openLogin }) {
   if (!admin) return null;
 
   const handleLogout = () => {
-    logout();
-    toast.success("Logged out.");
+    loggingOut.current = true;
     navigate("/");
+    setTimeout(() => {
+      logout();
+      toast.success("Logged out.");
+    }, 50);
   };
 
   return (
