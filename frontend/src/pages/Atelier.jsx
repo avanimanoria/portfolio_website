@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
-import { LogOut, Save, Plus, Trash2, Mail, GraduationCap, Briefcase, User, Settings as SettingsIcon, Inbox } from "lucide-react";
+import { LogOut, Save, Plus, Trash2, Mail, GraduationCap, Briefcase, User, Settings as SettingsIcon, Inbox, Upload, Image as ImageIcon, Film } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 import Logo from "@/components/portfolio/Logo";
@@ -73,6 +73,78 @@ function NotesInput({ value = [], onChange }) {
         onChange(v.split("\n").map((s) => s.trim()).filter(Boolean));
       }}
     />
+  );
+}
+
+/**
+ * Field with an inline "upload" button. Accepts image or video files.
+ * On upload success, sets the returned URL as the field value.
+ */
+function UploadField({ label, value, onChange, accept = "image/*,video/*", kind = "media", testId }) {
+  const inputRef = useRef(null);
+  const [busy, setBusy] = useState(false);
+
+  const onFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setBusy(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const { data } = await api.post("/admin/upload", fd, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      onChange(data.url);
+      toast.success(`${data.kind === "video" ? "Video" : "Image"} uploaded.`);
+    } catch (err) {
+      const d = err?.response?.data?.detail;
+      toast.error(typeof d === "string" ? d : "Upload failed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const Icon = kind === "video" ? Film : ImageIcon;
+
+  return (
+    <div>
+      <label className="font-mono-accent text-[10px] uppercase tracking-[0.28em] text-zinc-500">{label}</label>
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          value={value || ""}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder="Paste a URL or use the upload button →"
+          data-testid={testId}
+          className="flex-1 bg-transparent border-0 border-b border-[rgba(255,255,255,0.15)] focus:border-[#D4AF37] outline-none py-3 text-white placeholder:text-zinc-600 font-light text-sm transition-colors"
+        />
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={busy}
+          data-testid={testId ? `${testId}-upload` : undefined}
+          className="shrink-0 inline-flex items-center gap-2 px-3 py-2 rounded-full border border-[rgba(212,175,55,0.4)] text-[#F2DDB6] hover:bg-[rgba(212,175,55,0.08)] transition-colors disabled:opacity-50"
+          title={`Upload ${kind}`}
+        >
+          {busy ? (
+            <>
+              <Upload size={12} className="animate-pulse" />
+              <span className="font-mono-accent text-[10px] uppercase tracking-[0.28em]">Uploading…</span>
+            </>
+          ) : (
+            <>
+              <Icon size={12} strokeWidth={1.75} />
+              <span className="font-mono-accent text-[10px] uppercase tracking-[0.28em]">Upload</span>
+            </>
+          )}
+        </button>
+        <input ref={inputRef} type="file" accept={accept} onChange={onFile} className="hidden" />
+      </div>
+      {value ? (
+        <div className="mt-2 text-[10px] font-mono-accent text-zinc-500 truncate">{value}</div>
+      ) : null}
+    </div>
   );
 }
 
@@ -324,11 +396,26 @@ function ProjectsTab() {
           <Field label="Title" value={p.title} onChange={(v) => setField(p.id, "title", v)} />
           <Field label="Blurb" value={p.blurb} onChange={(v) => setField(p.id, "blurb", v)} rows={3} />
           <StackInput value={p.stack || []} onChange={(v) => setField(p.id, "stack", v)} />
+          <UploadField
+            label="Cover image (URL or upload)"
+            value={p.image_url}
+            onChange={(v) => setField(p.id, "image_url", v)}
+            accept="image/*"
+            kind="image"
+            testId={`atelier-project-image-${p.id}`}
+          />
+          <UploadField
+            label="Demo video (URL — supports YouTube / Vimeo / mp4 / or upload)"
+            value={p.demo_video_url}
+            onChange={(v) => setField(p.id, "demo_video_url", v)}
+            accept="video/*"
+            kind="video"
+            testId={`atelier-project-video-${p.id}`}
+          />
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <Field label="Image URL" value={p.image_url} onChange={(v) => setField(p.id, "image_url", v)} />
             <Field label="GitHub URL" value={p.github_url} onChange={(v) => setField(p.id, "github_url", v)} />
+            <Field label="Live URL" value={p.live_url} onChange={(v) => setField(p.id, "live_url", v)} />
           </div>
-          <Field label="Live URL" value={p.live_url} onChange={(v) => setField(p.id, "live_url", v)} />
           <div className="flex items-center justify-end gap-3 pt-2">
             <button
               type="button"

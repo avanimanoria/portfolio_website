@@ -10,8 +10,9 @@ import jwt
 import bcrypt
 from datetime import datetime, timezone, timedelta
 from typing import List, Optional
-from fastapi import FastAPI, APIRouter, HTTPException, Depends
+from fastapi import FastAPI, APIRouter, HTTPException, Depends, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.staticfiles import StaticFiles
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
 from pydantic import BaseModel, Field, ConfigDict, EmailStr
@@ -27,6 +28,13 @@ ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'admin123')
 
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
+
+# ---------- Uploads ----------
+UPLOADS_DIR = ROOT_DIR / "uploads"
+UPLOADS_DIR.mkdir(exist_ok=True)
+ALLOWED_IMAGE = {".png", ".jpg", ".jpeg", ".webp", ".gif", ".svg"}
+ALLOWED_VIDEO = {".mp4", ".webm", ".mov", ".m4v"}
+MAX_UPLOAD_BYTES = 80 * 1024 * 1024  # 80 MB
 
 app = FastAPI(title="Avani Manoria Portfolio API")
 api_router = APIRouter(prefix="/api")
@@ -163,6 +171,7 @@ class ProjectIn(BaseModel):
     image_url: Optional[str] = ""
     github_url: Optional[str] = ""
     live_url: Optional[str] = ""
+    demo_video_url: Optional[str] = ""
     order: int = 0
 
 
@@ -177,6 +186,7 @@ class Project(BaseModel):
     image_url: Optional[str] = ""
     github_url: Optional[str] = ""
     live_url: Optional[str] = ""
+    demo_video_url: Optional[str] = ""
     order: int = 0
 
 
@@ -237,8 +247,9 @@ def _default_projects():
             "blurb": "A complete web platform to track, verify and credit student activity points across a university. Faculty-approval workflow, student submissions, admin dashboards, exportable transcripts — designed so nobody ever has to email a spreadsheet again.",
             "stack": ["React", "Node.js", "Express", "MongoDB", "Tailwind"],
             "image_url": "https://images.pexels.com/photos/8346914/pexels-photo-8346914.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
-            "github_url": "",
+            "github_url": "https://github.com/avanimanoria/activity-points-system",
             "live_url": "",
+            "demo_video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4",
             "order": 0,
             "created_at": now,
         },
@@ -250,8 +261,9 @@ def _default_projects():
             "blurb": "An end-to-end ML pipeline that predicts customer churn on a telecom-style dataset — from EDA and feature engineering to model comparison (Logistic, Random Forest, XGBoost), calibration, threshold tuning, and a lightweight inference API.",
             "stack": ["Python", "Pandas", "scikit-learn", "XGBoost", "FastAPI"],
             "image_url": "https://images.unsplash.com/photo-1709625862266-014ef072fd93?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGx1eHVyeSUyMGRhcmslMjBnZW9tZXRyeSUyMDNkfGVufDB8fHx8MTc4MjkzNDM0N3ww&ixlib=rb-4.1.0&q=85",
-            "github_url": "",
+            "github_url": "https://github.com/avanimanoria/customer-churn-ml",
             "live_url": "",
+            "demo_video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4",
             "order": 1,
             "created_at": now,
         },
@@ -263,8 +275,9 @@ def _default_projects():
             "blurb": "A novel LLM cognitive architecture that treats forgetting as a first-class feature. Vellum introduces sleep-like consolidation cycles, decayed episodic memory, and a metacognitive layer that revises its own beliefs. Because most AIs remember everything and understand nothing — and that gap is what I want to close.",
             "stack": ["Python", "PyTorch", "Transformers", "Vector DBs", "Cognitive Systems"],
             "image_url": "https://images.unsplash.com/photo-1517241034903-9a4c3ab12f00?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1NzZ8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGx1eHVyeSUyMGRhcmslMjBnZW9tZXRyeSUyMDNkfGVufDB8fHx8MTc4MjkzNDM0N3ww&ixlib=rb-4.1.0&q=85",
-            "github_url": "",
+            "github_url": "https://github.com/avanimanoria/vellum",
             "live_url": "",
+            "demo_video_url": "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4",
             "order": 2,
             "created_at": now,
         },
@@ -316,6 +329,30 @@ async def startup():
         await db.settings.insert_one(DEFAULT_SETTINGS.copy())
     if await db.projects.count_documents({}) == 0:
         await db.projects.insert_many(_default_projects())
+    else:
+        # Migration: backfill github_url + demo_video_url for existing seeded titles when empty
+        sample_map = {p["title"]: (p["github_url"], p["demo_video_url"]) for p in _default_projects()}
+        for title, (gh, demo) in sample_map.items():
+            await db.projects.update_one(
+                {
+                    "title": title,
+                    "$or": [
+                        {"demo_video_url": {"$in": ["", None]}},
+                        {"demo_video_url": {"$exists": False}},
+                    ],
+                },
+                {"$set": {"demo_video_url": demo}},
+            )
+            await db.projects.update_one(
+                {
+                    "title": title,
+                    "$or": [
+                        {"github_url": {"$in": ["", None]}},
+                        {"github_url": {"$exists": False}},
+                    ],
+                },
+                {"$set": {"github_url": gh}},
+            )
     if await db.education.count_documents({}) == 0:
         await db.education.insert_many(_default_education())
 
@@ -463,12 +500,65 @@ async def delete_message(mid: str, admin=Depends(get_current_admin)):
     return {"deleted": res.deleted_count}
 
 
+# ---------- Uploads (admin only) ----------
+@api_router.post("/admin/upload")
+async def upload_file(file: UploadFile = File(...), admin=Depends(get_current_admin)):
+    filename = file.filename or "upload"
+    ext = ("." + filename.rsplit(".", 1)[-1].lower()) if "." in filename else ""
+    kind = None
+    if ext in ALLOWED_IMAGE:
+        kind = "image"
+    elif ext in ALLOWED_VIDEO:
+        kind = "video"
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unsupported file type '{ext}'. Allowed: images {sorted(ALLOWED_IMAGE)} · videos {sorted(ALLOWED_VIDEO)}",
+        )
+
+    new_name = f"{uuid.uuid4().hex}{ext}"
+    dest = UPLOADS_DIR / new_name
+
+    size = 0
+    try:
+        with dest.open("wb") as fh:
+            while True:
+                chunk = await file.read(1024 * 1024)  # 1 MB
+                if not chunk:
+                    break
+                size += len(chunk)
+                if size > MAX_UPLOAD_BYTES:
+                    fh.close()
+                    dest.unlink(missing_ok=True)
+                    raise HTTPException(
+                        status_code=413,
+                        detail=f"File too large. Max {MAX_UPLOAD_BYTES // (1024 * 1024)} MB.",
+                    )
+                fh.write(chunk)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        dest.unlink(missing_ok=True)
+        logger.exception("Upload failed")
+        raise HTTPException(status_code=500, detail="Upload failed") from exc
+
+    return {
+        "url": f"/api/uploads/{new_name}",
+        "filename": new_name,
+        "size": size,
+        "kind": kind,
+    }
+
+
 @api_router.get("/")
 async def root():
     return {"message": "Avani Manoria Portfolio API"}
 
 
 app.include_router(api_router)
+
+# Serve uploaded files under /api/uploads/* so Kubernetes ingress routes to backend.
+app.mount("/api/uploads", StaticFiles(directory=str(UPLOADS_DIR)), name="uploads")
 
 app.add_middleware(
     CORSMiddleware,
