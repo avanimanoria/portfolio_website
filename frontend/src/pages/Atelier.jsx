@@ -386,6 +386,18 @@ function ProjectsTab() {
         }
       />
       {items.length === 0 && <div className="text-zinc-500 text-sm">No projects yet.</div>}
+      <div className="rounded-xl border border-dashed border-[rgba(212,175,55,0.3)] bg-[rgba(212,175,55,0.04)] p-4">
+        <div className="font-mono-accent text-[10px] uppercase tracking-[0.28em] text-[#F2DDB6] mb-1">
+          A note on uploads
+        </div>
+        <p className="text-zinc-400 text-sm font-light leading-relaxed">
+          For your deployed site, the safest thing is to paste a hosted URL into the
+          <span className="text-white"> Cover image</span> and <span className="text-white">Demo video</span>
+          fields (YouTube, Vimeo, Google Drive share, Cloudinary, or any direct MP4). Files uploaded via
+          the Upload button live on the container disk and can disappear after a redeploy. YouTube / Vimeo
+          links play beautifully inside the project modal.
+        </p>
+      </div>
       {items.map((p) => (
         <div key={p.id} className="rounded-xl border border-[rgba(255,255,255,0.06)] p-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
