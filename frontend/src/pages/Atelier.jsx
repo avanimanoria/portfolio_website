@@ -503,7 +503,7 @@ function SettingsTab() {
         <div className="font-serif-display text-xl text-white">How to access this page</div>
         <ul className="space-y-2 text-zinc-400 text-sm font-light">
           <li>• Direct URL: <code className="font-mono-accent text-[#F2DDB6]">/atelier</code></li>
-          <li>• Global shortcut anywhere on the site: <code className="font-mono-accent text-[#F2DDB6]">Ctrl / ⌘ + Shift + A</code></li>
+          <li>• Global shortcut anywhere on the site: hold <code className="font-mono-accent text-[#F2DDB6]">Ctrl + Shift + Alt + Z</code>, then press <code className="font-mono-accent text-[#F2DDB6]">S</code></li>
           <li>• There is no link to this area on the public site — it is invisible to visitors.</li>
         </ul>
       </div>

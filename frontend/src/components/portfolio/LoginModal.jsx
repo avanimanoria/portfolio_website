@@ -144,7 +144,7 @@ export default function LoginModal({ open, onClose, redirectTo }) {
             </button>
 
             <div className="mt-6 text-center font-mono-accent text-[9px] uppercase tracking-[0.28em] text-zinc-600">
-              Shortcut · Ctrl / ⌘ + Shift + A · Esc to close
+              Shortcut · Ctrl + Shift + Alt + Z → S · Esc to close
             </div>
           </motion.form>
         </motion.div>

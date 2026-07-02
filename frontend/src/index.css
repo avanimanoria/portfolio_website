@@ -183,6 +183,13 @@ body {
     50% { opacity: 0.6; }
 }
 .pulse-soft { animation: pulse-soft 3.5s ease-in-out infinite; }
+/* ---- Custom cursor: hide native cursor on fine-pointer devices ---- */
+html.custom-cursor-on,
+html.custom-cursor-on body,
+html.custom-cursor-on * {
+    cursor: none !important;
+}
+
 
 .max-container {
     max-width: 1280px;

@@ -1,4 +1,5 @@
-import { motion } from "framer-motion";
+import { useRef } from "react";
+import { motion, useScroll, useTransform } from "framer-motion";
 import Scene3D from "./Scene3D";
 
 const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.15, delayChildren: 0.2 } } };
@@ -20,22 +21,40 @@ export default function Hero({ settings }) {
   const [first, ...restParts] = name.split(" ");
   const last = restParts.join(" ") || "";
 
+  const heroRef = useRef(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const contentY = useTransform(scrollYProgress, [0, 1], [0, 120]);
+  const contentOpacity = useTransform(scrollYProgress, [0, 0.75], [1, 0]);
+  const sceneY = useTransform(scrollYProgress, [0, 1], [0, -80]);
+  const sceneScale = useTransform(scrollYProgress, [0, 1], [1, 1.08]);
+
   return (
-    <section id="top" data-testid="hero-section" className="relative min-h-[100svh] w-full overflow-hidden">
-      <div className="absolute inset-0">
+    <section
+      id="top"
+      ref={heroRef}
+      data-testid="hero-section"
+      className="relative min-h-[100svh] w-full overflow-hidden"
+    >
+      <motion.div style={{ y: sceneY, scale: sceneScale }} className="absolute inset-0 will-change-transform">
         <Scene3D />
-      </div>
+      </motion.div>
 
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "radial-gradient(ellipse at 50% 100%, rgba(5,5,5,0) 0%, rgba(5,5,5,0.9) 90%), radial-gradient(ellipse at 50% 0%, rgba(5,5,5,0) 40%, rgba(5,5,5,0.7) 100%)",
+            "radial-gradient(ellipse at 50% 100%, rgba(5,5,5,0) 0%, rgba(5,5,5,0.92) 90%), radial-gradient(ellipse at 50% 0%, rgba(5,5,5,0) 40%, rgba(5,5,5,0.7) 100%)",
         }}
       />
 
-      <div className="relative z-10 max-container flex flex-col justify-center min-h-[100svh] pt-32 pb-24">
+      <motion.div
+        style={{ y: contentY, opacity: contentOpacity }}
+        className="relative z-10 max-container flex flex-col justify-center min-h-[100svh] pt-32 pb-24 will-change-transform"
+      >
         <motion.div initial="hidden" animate="show" variants={stagger} className="max-w-4xl">
           <motion.div variants={line} className="flex items-center gap-3 mb-8">
             <span className="h-px w-10 bg-[#D4AF37]" />
@@ -110,7 +129,7 @@ export default function Hero({ settings }) {
           <span className="font-mono-accent text-[10px] uppercase tracking-[0.4em]">Scroll</span>
           <span className="h-8 w-px bg-gradient-to-b from-[rgba(212,175,55,0.6)] to-transparent" />
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   );
 }

@@ -1,104 +1,130 @@
-import { Suspense, useRef } from "react";
+import { Suspense, useMemo, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { Environment, Float, MeshTransmissionMaterial, Sparkles, Stars } from "@react-three/drei";
+import { Sparkles, Stars, Float } from "@react-three/drei";
 import * as THREE from "three";
 
-function GoldKnot() {
-  const ref = useRef();
-  const goldLight = useRef();
-  const sapphireLight = useRef();
+/**
+ * Elegant, low-visual-noise hero backdrop:
+ *  - a slowly rotating wireframe icosahedron (gold hairlines)
+ *  - a thin counter-rotating wireframe torus (sapphire hairlines)
+ *  - orbiting golden dots (small spheres on an orbit ring)
+ *  - subtle sparkles + stars
+ *
+ * No transmissive material, no glossy melted blobs — just clean geometry.
+ */
 
+function WireIcosahedron() {
+  const group = useRef();
   useFrame((state, delta) => {
-    if (ref.current) {
-      ref.current.rotation.x += delta * 0.14;
-      ref.current.rotation.y += delta * 0.21;
+    if (group.current) {
+      group.current.rotation.x += delta * 0.08;
+      group.current.rotation.y += delta * 0.12;
       const t = state.clock.getElapsedTime();
-      ref.current.position.y = Math.sin(t * 0.6) * 0.08;
-    }
-    if (goldLight.current) {
-      const { x, y } = state.mouse;
-      goldLight.current.position.x = x * 4;
-      goldLight.current.position.y = y * 3;
-    }
-    if (sapphireLight.current) {
-      const { x, y } = state.mouse;
-      sapphireLight.current.position.x = -x * 3.5;
-      sapphireLight.current.position.y = -y * 2.5;
+      group.current.position.y = Math.sin(t * 0.4) * 0.05;
     }
   });
 
+  // Precompute edges once
+  const [wireGeom, glowGeom] = useMemo(() => {
+    const g = new THREE.IcosahedronGeometry(1.55, 1);
+    return [new THREE.EdgesGeometry(g), g];
+  }, []);
+
   return (
-    <>
-      <pointLight ref={goldLight} intensity={2.4} distance={9} color="#F2DDB6" />
-      <pointLight ref={sapphireLight} intensity={2.6} distance={10} color="#3B7DDD" />
-      <Float speed={1.2} floatIntensity={0.6} rotationIntensity={0.4}>
-        <mesh ref={ref} scale={1.35}>
-          <torusKnotGeometry args={[0.9, 0.28, 220, 40, 2, 3]} />
-          <MeshTransmissionMaterial
-            samples={4}
-            resolution={256}
-            transmission={0.85}
-            roughness={0.16}
-            thickness={1.2}
-            ior={1.6}
-            chromaticAberration={0.4}
-            anisotropy={0.4}
-            distortion={0.28}
-            distortionScale={0.35}
-            temporalDistortion={0.14}
-            color="#F5E1B8"
-            attenuationColor="#0F52BA"
-            attenuationDistance={1.1}
-            background={new THREE.Color("#050505")}
-          />
-        </mesh>
-      </Float>
-    </>
+    <group ref={group}>
+      {/* Faint filled glow shell */}
+      <mesh geometry={glowGeom}>
+        <meshBasicMaterial color="#0B1E3F" transparent opacity={0.35} />
+      </mesh>
+      {/* Gold wireframe */}
+      <lineSegments geometry={wireGeom}>
+        <lineBasicMaterial color="#D4AF37" transparent opacity={0.9} />
+      </lineSegments>
+    </group>
   );
 }
 
-function InnerCore() {
+function WireTorus() {
   const ref = useRef();
   useFrame((state, delta) => {
     if (ref.current) {
       ref.current.rotation.x -= delta * 0.1;
-      ref.current.rotation.z += delta * 0.08;
+      ref.current.rotation.z += delta * 0.06;
     }
   });
+  const geom = useMemo(() => {
+    const t = new THREE.TorusGeometry(2.3, 0.02, 8, 160);
+    return t;
+  }, []);
   return (
-    <mesh ref={ref} scale={0.55}>
-      <icosahedronGeometry args={[1, 1]} />
-      <meshStandardMaterial
-        color="#D4AF37"
-        metalness={1}
-        roughness={0.18}
-        emissive="#0F52BA"
-        emissiveIntensity={0.5}
-      />
+    <mesh ref={ref} geometry={geom} rotation={[Math.PI / 3, 0, 0]}>
+      <meshBasicMaterial color="#3B7DDD" transparent opacity={0.7} />
     </mesh>
   );
+}
+
+function OrbitDots({ count = 14, radius = 2.7, y = 0, tilt = 0.35 }) {
+  const group = useRef();
+  useFrame((_, delta) => {
+    if (group.current) group.current.rotation.y += delta * 0.18;
+  });
+  const dots = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < count; i++) {
+      const a = (i / count) * Math.PI * 2;
+      arr.push([Math.cos(a) * radius, y + Math.sin(a) * 0.06, Math.sin(a) * radius]);
+    }
+    return arr;
+  }, [count, radius, y]);
+  return (
+    <group ref={group} rotation={[tilt, 0, 0]}>
+      {dots.map((p, i) => (
+        <mesh key={i} position={p}>
+          <sphereGeometry args={[0.025, 12, 12]} />
+          <meshBasicMaterial color={i % 3 === 0 ? "#F2DDB6" : "#7BAAF7"} />
+        </mesh>
+      ))}
+    </group>
+  );
+}
+
+function Innards() {
+  return (
+    <Float speed={1.1} floatIntensity={0.45} rotationIntensity={0.25}>
+      <WireIcosahedron />
+      <WireTorus />
+      <OrbitDots count={16} radius={2.4} tilt={0.4} />
+      <OrbitDots count={10} radius={3.1} tilt={-0.25} />
+    </Float>
+  );
+}
+
+function CameraParallax() {
+  useFrame((state) => {
+    const { mouse, camera } = state;
+    camera.position.x += (mouse.x * 0.6 - camera.position.x) * 0.04;
+    camera.position.y += (-mouse.y * 0.4 - camera.position.y) * 0.04;
+    camera.lookAt(0, 0, 0);
+  });
+  return null;
 }
 
 export default function Scene3D() {
   return (
     <Canvas
       data-testid="hero-3d-canvas"
-      camera={{ position: [0, 0, 5], fov: 40 }}
+      camera={{ position: [0, 0, 6.2], fov: 42 }}
       dpr={[1, 1.8]}
       gl={{ antialias: true, alpha: true }}
       style={{ background: "transparent" }}
     >
-      <color attach="background" args={["#050505"]} />
-      <ambientLight intensity={0.28} />
-      <directionalLight position={[5, 5, 5]} intensity={1.1} color="#F2DDB6" />
-      <directionalLight position={[-4, -3, 2]} intensity={0.55} color="#3B7DDD" />
+      <ambientLight intensity={0.4} />
       <Suspense fallback={null}>
-        <GoldKnot />
-        <InnerCore />
-        <Sparkles count={120} scale={7.5} size={2.2} speed={0.35} color="#F2DDB6" opacity={0.6} />
-        <Sparkles count={80} scale={9} size={1.6} speed={0.25} color="#3B7DDD" opacity={0.55} />
-        <Stars radius={40} depth={30} count={1400} factor={2.1} saturation={0} fade speed={0.4} />
-        <Environment preset="night" />
+        <Innards />
+        <CameraParallax />
+        <Sparkles count={80} scale={[10, 6, 10]} size={2} speed={0.25} color="#F2DDB6" opacity={0.55} />
+        <Sparkles count={60} scale={[12, 7, 12]} size={1.3} speed={0.18} color="#3B7DDD" opacity={0.5} />
+        <Stars radius={40} depth={30} count={1500} factor={2} saturation={0} fade speed={0.35} />
       </Suspense>
     </Canvas>
   );
