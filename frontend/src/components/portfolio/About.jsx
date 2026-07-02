@@ -1,19 +1,20 @@
 import { motion } from "framer-motion";
 import SectionHeader from "./SectionHeader";
 
-export default function About() {
+export default function About({ settings }) {
+  const bio1 = settings?.bio_paragraph_1;
+  const bio2 = settings?.bio_paragraph_2;
+  const quote = settings?.philosophy_quote || "Great systems are not built loud. They're built listening.";
+
   return (
-    <section
-      id="about"
-      data-testid="about-section"
-      className="relative py-24 md:py-40 max-container"
-    >
+    <section id="about" data-testid="about-section" className="relative py-24 md:py-40 max-container">
       <SectionHeader
         index="01"
-        eyebrow="A Brief Introduction"
+        eyebrow="Piccola introduzione"
         title={
           <>
-            A quiet obsession with the <span className="italic text-gold-gradient">architecture of things</span>.
+            A quiet obsession with the{" "}
+            <span className="font-serif-italic text-gold-gradient">architettura</span> of things.
           </>
         }
       />
@@ -21,24 +22,19 @@ export default function About() {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-10 md:gap-16">
         <div className="md:col-span-7 space-y-8">
           <p className="text-zinc-300 text-lg md:text-xl font-light leading-relaxed">
-            I&apos;m a software engineer working at the intersection of{" "}
-            <span className="text-white">distributed systems</span>,{" "}
-            <span className="text-white">applied AI</span>, and{" "}
-            <span className="text-white">automation</span>. I care about the parts of engineering
-            that are invisible when they work: latency budgets, back-pressure, retries, graceful
-            degradation, the small ceremonies that make software feel calm.
+            {bio1 ||
+              "I'm a final-year engineering student working at the intersection of full-stack software, applied machine learning, and thoughtful AI systems. I care about the parts of engineering that are invisible when they work — clean interfaces, honest APIs, models that fail gracefully."}
           </p>
           <p className="text-zinc-400 text-base md:text-lg font-light leading-relaxed">
-            My favourite problems are the ones where a system is on the edge of collapse — where the
-            answer is not more code, but a more considered design. I like turning tangled workflows
-            into elegant pipelines, and half-formed ideas into products people trust.
+            {bio2 ||
+              "My favourite problems are the ones that feel messy at first — a workflow no one has bothered to formalise, a dataset that hides a pattern, a UI that could feel a little more alive. I like turning those into things that are calm, considered, and quietly delightful."}
           </p>
 
           <div className="pt-6 grid grid-cols-2 sm:grid-cols-3 gap-6">
             {[
-              { k: "Systems shipped", v: "40+" },
-              { k: "Cloud regions", v: "12" },
-              { k: "Automations", v: "∞" },
+              { k: "Projects", v: settings?.stats_shipped || "3" },
+              { k: "Domains", v: "3" },
+              { k: "Curiosity", v: settings?.stats_automations || "∞" },
             ].map((s) => (
               <motion.div
                 key={s.k}
@@ -49,9 +45,7 @@ export default function About() {
                 className="border-l border-[rgba(212,175,55,0.4)] pl-4"
               >
                 <div className="font-serif-display text-4xl text-white">{s.v}</div>
-                <div className="mt-1 font-mono-accent text-[10px] uppercase tracking-[0.24em] text-zinc-500">
-                  {s.k}
-                </div>
+                <div className="mt-1 font-mono-accent text-[10px] uppercase tracking-[0.24em] text-zinc-500">{s.k}</div>
               </motion.div>
             ))}
           </div>
@@ -67,16 +61,20 @@ export default function About() {
           <div className="glass rounded-2xl p-8 md:p-10 relative overflow-hidden">
             <div
               aria-hidden
-              className="absolute -top-16 -right-16 h-52 w-52 rounded-full opacity-30 blur-2xl"
+              className="absolute -top-16 -right-16 h-52 w-52 rounded-full opacity-40 blur-2xl"
+              style={{ background: "radial-gradient(closest-side, #0F52BA, transparent)" }}
+            />
+            <div
+              aria-hidden
+              className="absolute -bottom-16 -left-16 h-52 w-52 rounded-full opacity-30 blur-2xl"
               style={{ background: "radial-gradient(closest-side, #D4AF37, transparent)" }}
             />
-            <div className="font-mono-accent text-[10px] uppercase tracking-[0.28em] text-[#F2DDB6]">
-              Philosophy
-            </div>
-            <p className="mt-4 font-serif-display italic text-2xl md:text-3xl text-white leading-snug">
-              &ldquo;Great systems are not built loud. They&apos;re built listening.&rdquo;
+            <div className="font-mono-accent text-[10px] uppercase tracking-[0.28em] text-[#F2DDB6]">Filosofia</div>
+            <p className="mt-4 font-serif-italic text-2xl md:text-3xl text-white leading-snug">
+              &ldquo;{quote}&rdquo;
             </p>
-            <div className="mt-8 space-y-4">
+            <div className="gold-hair my-8" />
+            <div className="space-y-4">
               {[
                 ["Craft", "Every abstraction earns its place."],
                 ["Restraint", "Fewer moving parts, longer lifespans."],

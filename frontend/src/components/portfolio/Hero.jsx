@@ -1,28 +1,31 @@
 import { motion } from "framer-motion";
 import Scene3D from "./Scene3D";
 
-const stagger = {
-  hidden: {},
-  show: { transition: { staggerChildren: 0.15, delayChildren: 0.2 } },
-};
+const stagger = { hidden: {}, show: { transition: { staggerChildren: 0.15, delayChildren: 0.2 } } };
 const line = {
   hidden: { y: 40, opacity: 0 },
   show: { y: 0, opacity: 1, transition: { duration: 0.9, ease: [0.2, 0.7, 0.2, 1] } },
 };
 
-export default function Hero() {
+export default function Hero({ settings }) {
+  const name = settings?.name || "Avani Manoria";
+  const tagline = settings?.tagline || "engineering the quiet elegance behind intelligent systems.";
+  const meta = settings?.hero_meta || {
+    based_in: "India · Remote",
+    focus: "Full-stack · ML · AI",
+    experience: "Final Year · Engineering",
+    status: "Open to opportunities",
+  };
+
+  const [first, ...restParts] = name.split(" ");
+  const last = restParts.join(" ") || "";
+
   return (
-    <section
-      id="top"
-      data-testid="hero-section"
-      className="relative min-h-[100svh] w-full overflow-hidden"
-    >
-      {/* 3D Canvas Layer */}
+    <section id="top" data-testid="hero-section" className="relative min-h-[100svh] w-full overflow-hidden">
       <div className="absolute inset-0">
         <Scene3D />
       </div>
 
-      {/* Vignette overlays */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
@@ -32,14 +35,8 @@ export default function Hero() {
         }}
       />
 
-      {/* Content */}
       <div className="relative z-10 max-container flex flex-col justify-center min-h-[100svh] pt-32 pb-24">
-        <motion.div
-          initial="hidden"
-          animate="show"
-          variants={stagger}
-          className="max-w-4xl"
-        >
+        <motion.div initial="hidden" animate="show" variants={stagger} className="max-w-4xl">
           <motion.div variants={line} className="flex items-center gap-3 mb-8">
             <span className="h-px w-10 bg-[#D4AF37]" />
             <span className="font-mono-accent text-[11px] uppercase tracking-[0.32em] text-[#F2DDB6]">
@@ -52,23 +49,18 @@ export default function Hero() {
             data-testid="hero-title"
             className="font-serif-display text-white text-[13vw] sm:text-[10vw] md:text-[8vw] lg:text-[7.2vw] leading-[0.95] tracking-tight"
           >
-            Avani <span className="italic text-gold-gradient">Manoria</span>
+            {first} <span className="font-serif-italic text-gold-gradient">{last}</span>
           </motion.h1>
 
-          <motion.p
-            variants={line}
-            className="font-serif-display italic text-2xl sm:text-3xl text-zinc-300 mt-6"
-          >
-            engineering the quiet elegance behind intelligent systems.
+          <motion.p variants={line} className="font-serif-italic text-2xl sm:text-3xl text-zinc-300 mt-6">
+            {tagline}
           </motion.p>
 
-          <motion.p
-            variants={line}
-            className="mt-8 max-w-xl text-base sm:text-lg text-zinc-400 font-light leading-relaxed"
-          >
-            I design distributed architectures, craft AI-driven automation, and build software
-            that feels considered from the first pixel to the last request. Precision,
-            performance, and restraint — always.
+          <motion.p variants={line} className="mt-8 max-w-xl text-base sm:text-lg text-zinc-400 font-light leading-relaxed">
+            A final-year engineering student building at the intersection of{" "}
+            <span className="text-white">full-stack software</span>,{" "}
+            <span className="text-white">machine learning</span>, and{" "}
+            <span className="text-white">applied AI</span>. Curious, careful, and quietly ambitious.
           </motion.p>
 
           <motion.div variants={line} className="mt-12 flex flex-wrap items-center gap-5">
@@ -86,7 +78,7 @@ export default function Hero() {
             <a
               href="#contact"
               data-testid="hero-contact-button"
-              className="inline-flex items-center gap-3 px-8 py-4 rounded-full border border-[rgba(255,255,255,0.15)] text-white hover:border-[rgba(212,175,55,0.5)] hover:text-[#F2DDB6] transition-colors"
+              className="inline-flex items-center gap-3 px-8 py-4 rounded-full border border-[rgba(59,125,221,0.35)] text-white hover:border-[#3B7DDD] hover:text-[#7BAAF7] transition-colors"
             >
               <span className="font-mono-accent text-[11px] uppercase tracking-[0.28em]">
                 Begin a conversation
@@ -94,25 +86,21 @@ export default function Hero() {
             </a>
           </motion.div>
 
-          {/* Meta strip */}
           <motion.div variants={line} className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-6 max-w-2xl">
             {[
-              { k: "Based in", v: "Everywhere · Remote" },
-              { k: "Focus", v: "AI · Systems · Automation" },
-              { k: "Experience", v: "6+ years" },
-              { k: "Status", v: "Selectively open" },
+              { k: "Based in", v: meta.based_in },
+              { k: "Focus", v: meta.focus },
+              { k: "Stage", v: meta.experience },
+              { k: "Status", v: meta.status },
             ].map((m) => (
               <div key={m.k}>
-                <div className="font-mono-accent text-[10px] uppercase tracking-[0.24em] text-zinc-500">
-                  {m.k}
-                </div>
+                <div className="font-mono-accent text-[10px] uppercase tracking-[0.24em] text-zinc-500">{m.k}</div>
                 <div className="mt-1 text-sm text-zinc-200 font-light">{m.v}</div>
               </div>
             ))}
           </motion.div>
         </motion.div>
 
-        {/* Scroll cue */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

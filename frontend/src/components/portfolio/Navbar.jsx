@@ -10,7 +10,7 @@ const links = [
   { label: "Contact", href: "#contact" },
 ];
 
-export default function Navbar() {
+export default function Navbar({ settings }) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -20,6 +20,8 @@ export default function Navbar() {
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  const availability = settings?.availability || "Open to work";
 
   return (
     <motion.header
@@ -34,11 +36,8 @@ export default function Navbar() {
       data-testid="site-navbar"
     >
       <div className="max-container flex items-center justify-between h-20">
-        <Logo />
-        <nav
-          data-testid="nav-links"
-          className="hidden md:flex items-center gap-10"
-        >
+        <Logo settings={settings} />
+        <nav data-testid="nav-links" className="hidden md:flex items-center gap-10">
           {links.map((l) => (
             <a
               key={l.href}
@@ -51,14 +50,10 @@ export default function Navbar() {
             </a>
           ))}
         </nav>
-        <a
-          href="#contact"
-          data-testid="nav-cta-button"
-          className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[rgba(212,175,55,0.4)] text-[#F2DDB6] text-xs font-mono-accent uppercase tracking-[0.24em] hover:bg-[rgba(212,175,55,0.08)] transition-colors"
-        >
+        <div className="hidden md:inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-[rgba(212,175,55,0.4)] text-[#F2DDB6] text-xs font-mono-accent uppercase tracking-[0.24em]">
           <span className="h-1.5 w-1.5 rounded-full bg-[#D4AF37] animate-pulse" />
-          Available
-        </a>
+          {availability}
+        </div>
         <button
           type="button"
           data-testid="mobile-nav-toggle"

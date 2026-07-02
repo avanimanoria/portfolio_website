@@ -1,0 +1,43 @@
+{
+  "summary": "Iteration 2 full-stack verification of Avani Manoria portfolio after auth + hidden Atelier admin + palette/content updates. All 17 backend pytest tests pass (health, public content, auth login/me, wrong password 401, brute-force 423 after 5 attempts, protected 401 guards, settings/projects/education CRUD, contact→admin/messages). All frontend flows pass: hero + 3D canvas load, hero meta shows 'Final Year · Engineering' and 'Open to opportunities', 3 seeded project cards render, experience-section present, Ctrl+Shift+A opens login modal, direct /atelier while unauthed shows login modal and redirects to /, login succeeds and routes to /atelier, all 5 tabs (profile/projects/education/messages/settings) render, tagline PATCH persists (verified via reload) and reverted, atelier-add-project button present, logout clears the localStorage 'avani_admin_token' and redirects to /. No uncaught JS runtime errors detected.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Atelier logout", "issues": ["After clicking atelier-logout-button, the LoginModal briefly re-opens over `/` before settling because the Atelier route's auth guard fires once more before navigation completes. Token is cleared correctly and URL is /, but the modal flash is a small UX polish item. Suggest: skip the guard's setOpen(true) if we are already navigating away, or navigate('/') before setting token to null."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "(Optional) Suppress the brief LoginModal flash immediately after logout on /atelier."
+  ],
+  "critical_code_review_comments": [
+    "server.py login route: brute-force lock resets `count` to 0 on lockout. That means after the 15-min window expires there is no residual count — fine but slightly non-standard. Consider keeping a rolling window instead.",
+    "server.py uses deprecated @app.on_event('startup'/'shutdown'). Migrate to FastAPI lifespan handlers (non-blocking).",
+    "server.py CORS allow_origins is read from CORS_ORIGINS env (defaults to '*'). Since allow_credentials=True is set together with '*', browsers will reject credentialed requests when '*' is used. Not currently biting because JWT is sent via Authorization header (not cookies), but this will bite the moment httpOnly cookies are introduced. Set explicit origins for prod.",
+    "server.py PATCH /api/profile/settings accepts a Settings patch but does not validate that `contact_email` is a valid email format (SettingsUpdate uses str). Consider EmailStr.",
+    "server.py `create_project` / `update_project` share the same ProjectIn model — good. `update_project` uses full replace via body.model_dump() rather than partial — that's a PATCH acting as PUT, may overwrite fields user did not intend to change. Consider exclude_unset.",
+    "server.py `update_education` — same partial-vs-full concern as projects.",
+    "Frontend Atelier logout flow briefly re-shows the LoginModal (minor race between clearing auth state and navigating away).",
+    "Frontend LoginModal — confirm data-testids are stable (verified: login-modal, login-input-email, login-input-password, login-submit-button all present)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/iteration_2.json",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "success_rate": {"backend": "100% (17/17)", "frontend": "100% of requested flows"},
+  "test_credentials": "Admin: avanimanoria@gmail.com / Atelier@Avani2026 (verified working). LocalStorage JWT key: 'avani_admin_token'.",
+  "seed_data_creation": "Test suite creates + deletes TEST_-prefixed projects, education entries, and contact messages within the same test run (no lingering test rows). Brute-force test uses a distinct email 'test_brute_lockout@example.com' so admin login is never locked; login_attempts entry is cleaned up after the test. Playwright test flipped the tagline to a TEST_ value and reverted it to the original within the same run — no destructive changes remain.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend suite at /app/backend/tests/backend_test.py has 17 tests (pytest-xdist, 2 workers, --dist loadscope). Uses python-dotenv to load /app/backend/.env for MONGO_URL/DB_NAME so it can clear login_attempts. Public URL is REACT_APP_BACKEND_URL. Admin creds live in /app/memory/test_credentials.md. For frontend, Ctrl+Shift+A opens LoginModal from anywhere; /atelier while unauthed redirects to / and shows modal; localStorage JWT key is 'avani_admin_token'. All requested data-testids exist: hero-3d-canvas, hero-title, experience-section, project-card, login-modal, login-input-email, login-input-password, login-submit-button, atelier-page, atelier-tab-{profile,projects,education,messages,settings}, atelier-input-{name,email,tagline,bio1,bio2,linkedin,github}, atelier-save-button, atelier-logout-button, atelier-add-project.",
+  "rca of the issue": "N/A — no bugs to root-cause. Only a minor cosmetic post-logout modal flash observed on /atelier; cause: the Atelier route's `useEffect` sees the cleared token and sets the login modal open one tick before `navigate('/')` resolves."
+}
