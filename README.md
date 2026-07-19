@@ -120,12 +120,6 @@ REACT_APP_BACKEND_URL="http://localhost:8001"
 
 ---
 
-## 🔐 Admin Panel (Atelier)
-
-- **URL:** `/atelier`
-- **Shortcut:** hold `Ctrl + Shift + Alt + Z`, then press `S`
-- Edit profile, projects (with demo video + GitHub links), education, and view the contact inbox.
-
 > For a deployed site, prefer pasting **hosted media URLs** (YouTube, Vimeo, Cloudinary, direct MP4) over uploading, since local uploads are ephemeral across redeploys.
 
 ---
